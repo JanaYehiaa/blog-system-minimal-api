@@ -7,7 +7,7 @@ public class Post
     public string Body { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? PublishedAt { get; set; }  // null = draft
-    public DateTime ModifiedAt { get; set; }
+    public DateTime? ModifiedAt { get; set; }
     public string CustomUrl { get; set; } = string.Empty;
     public string AuthorUsername { get; set; } = string.Empty;
     public PostStatus Status { get; set; }
