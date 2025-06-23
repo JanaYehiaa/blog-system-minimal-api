@@ -27,6 +27,14 @@ public class PostService
 
     private int GeneratePostId()
     {
-        return PostStore.Posts.OrderByDescending(post => post.Id).FirstOrDefault().Id + 1;
+        if (PostStore.Posts.Count == 0)
+        {
+            return 1;
+        }
+        else
+        {
+            var lastPost = PostStore.Posts.OrderByDescending(post => post.Id).FirstOrDefault();
+            return (lastPost?.Id ?? 0) + 1;
+        }
     }
 }
