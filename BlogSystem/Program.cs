@@ -5,6 +5,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddScoped<PostService>();
 
 builder.Services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options =>
 {
@@ -20,10 +21,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.MapPost("/create-blog", ([FromBody] PostCreateDTO post_C_DTO) =>
+app.MapPost("/create-blog", ([FromBody] PostCreateDTO post_C_DTO, PostService postService) =>
 { //TO DO: add validations later
-    PostService handler = new();
-    Post post = handler.CreatePost(post_C_DTO, "admin");
+    Post post = postService.CreatePost(post_C_DTO, "admin");
     PostStore.Posts.Add(post);
     return Results.Created($"/{post.CustomUrl}", post);
 })
@@ -33,10 +33,9 @@ app.MapPost("/create-blog", ([FromBody] PostCreateDTO post_C_DTO) =>
 .ProducesValidationProblem(); //for when i add the validations
 
 
-app.MapGet("/{customUrl}", (string customUrl) =>
+app.MapGet("/{customUrl}", (string customUrl, PostService postService) =>
 {
-    PostService handler = new();
-    var dto = handler.GetPostByCustomUrl(customUrl);
+    var dto = postService.GetPostByCustomUrl(customUrl);
     return dto is not null ? Results.Ok(dto) : Results.NotFound();
 })
 .WithName("GetPostByCustomUrl")
