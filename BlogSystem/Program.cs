@@ -21,19 +21,18 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.MapPost("/create-blog", ([FromBody] PostCreateDTO post_C_DTO, PostService postService) =>
+app.MapPost("/posts", ([FromBody] PostCreateDTO post_C_DTO, PostService postService) =>
 { //TO DO: add validations later
     Post post = postService.CreatePost(post_C_DTO, "admin");
     PostStore.Posts.Add(post);
     return Results.Created($"/{post.CustomUrl}", post);
 })
-.WithName("CreateBlog")
+.WithName("CreatePost")
 .Accepts<PostCreateDTO>("application/json")
 .Produces<Post>(201)
 .ProducesValidationProblem(); //for when i add the validations
 
-
-app.MapGet("/{customUrl}", (string customUrl, PostService postService) =>
+app.MapGet("/posts/{customUrl}", (string customUrl, PostService postService) =>
 {
     var dto = postService.GetPostViewDTOByCustomUrl(customUrl);
     return dto is not null ? Results.Ok(dto) : Results.NotFound();
@@ -45,14 +44,12 @@ app.MapGet("/{customUrl}", (string customUrl, PostService postService) =>
 app.MapPut("/posts/{customUrl}", (string customUrl, PostUpdateDTO dto, PostService postService) =>
 {
     var post = postService.UpdatePost(dto, customUrl);
-    return post is not null ? Results.Ok(dto) : Results.NotFound();
+    return post is not null ? Results.Ok(post) : Results.NotFound();
 })
- .WithName("UpdateBlog")
+ .WithName("UpdatePost")
 .Accepts<PostUpdateDTO>("application/json")
 .Produces<Post>(200)
 .Produces(404);
-
-
 
 app.MapDelete("/posts/{customUrl}", (string customUrl, PostService postService) =>
 {
