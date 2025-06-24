@@ -39,6 +39,17 @@ public class PostService
         };
     }
 
+    public bool DeletePostByCustomUrl(string customUrl)
+    {
+        var post = PostStore.Posts.FirstOrDefault(p => p.CustomUrl == customUrl);
+        if (post is not null)
+        {
+            PostStore.Posts.Remove(post);
+            return true;
+        }
+        return false;
+    }
+
     private string Slugify(string title)
     {
         return title.ToLower().Replace(" ", "-");
