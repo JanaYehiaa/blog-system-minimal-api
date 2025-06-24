@@ -42,6 +42,19 @@ app.MapGet("/{customUrl}", (string customUrl, PostService postService) =>
 .Produces<PostViewDTO>(200)
 .Produces(404);
 
+
+app.MapDelete("/delete-blog", (string customUrl, PostService postService) =>
+{
+    var dto = postService.GetPostByCustomUrl(customUrl);
+    if (dto is null)
+    {
+        return Results.NotFound();
+    }
+    else
+    {
+        
+    }
+});
 app.UseHttpsRedirection();
 
 
