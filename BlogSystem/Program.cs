@@ -35,7 +35,7 @@ app.MapPost("/create-blog", ([FromBody] PostCreateDTO post_C_DTO, PostService po
 
 app.MapGet("/{customUrl}", (string customUrl, PostService postService) =>
 {
-    var dto = postService.GetPostByCustomUrl(customUrl);
+    var dto = postService.GetPostViewDTOByCustomUrl(customUrl);
     return dto is not null ? Results.Ok(dto) : Results.NotFound();
 })
 .WithName("GetPostByCustomUrl")
@@ -43,18 +43,24 @@ app.MapGet("/{customUrl}", (string customUrl, PostService postService) =>
 .Produces(404);
 
 
-app.MapDelete("/delete-blog", (string customUrl, PostService postService) =>
+app.MapDelete("/posts/{customUrl}", (string customUrl, PostService postService) =>
 {
-    var dto = postService.GetPostByCustomUrl(customUrl);
-    if (dto is null)
+    var post = PostStore.Posts.FirstOrDefault(p => p.CustomUrl == customUrl);
+    if (post is null)
     {
         return Results.NotFound();
     }
     else
     {
-        
+        PostStore.Posts.Remove(post);
+        return Results.NoContent();
     }
-});
+})
+.WithName("DeletePost")
+.Produces(204)
+.Produces(404);
+
+
 app.UseHttpsRedirection();
 
 
