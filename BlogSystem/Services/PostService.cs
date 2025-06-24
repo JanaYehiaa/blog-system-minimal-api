@@ -50,6 +50,23 @@ public class PostService
         return false;
     }
 
+    public Post? UpdatePost(PostUpdateDTO dto, string customUrl)
+    {
+        var post = PostStore.Posts.FirstOrDefault(p => p.CustomUrl == customUrl);
+        if (post is null) return null;
+
+        post.Title = dto.Title;
+        post.Description = dto.Description;
+        post.Body = dto.Body;
+        post.Slug = Slugify(dto.Title);
+        post.ModifiedAt = DateTime.UtcNow;
+        post.Status = dto.Status; //restrict later with JWT-based roles
+        post.Metadata = dto.Metadata;
+        post.Assets = dto.Assets;
+
+        return post;
+    }
+
     private string Slugify(string title)
     {
         return title.ToLower().Replace(" ", "-");
