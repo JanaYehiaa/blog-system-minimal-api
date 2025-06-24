@@ -23,7 +23,7 @@ if (app.Environment.IsDevelopment())
 app.MapPost("/create-blog", ([FromBody] PostCreateDTO post_C_DTO) =>
 { //TO DO: add validations later
     PostService handler = new();
-    Post post = handler.CreatePost(post_C_DTO);
+    Post post = handler.CreatePost(post_C_DTO, "admin");
     PostStore.Posts.Add(post);
     return Results.Created($"/{post.CustomUrl}", post);
 })
