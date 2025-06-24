@@ -20,6 +20,24 @@ public class PostService
         return post;
     }
 
+    public PostViewDTO? GetPostByCustomUrl(string customUrl)
+    {
+        var post = PostStore.Posts.FirstOrDefault(p => p.CustomUrl == customUrl);
+        if (post is null) return null;
+
+        return new PostViewDTO
+        {
+            Title = post.Title,
+            Description = post.Description,
+            Body = post.Body,
+            PublishedAt = post.PublishedAt,
+            CustomUrl = post.CustomUrl,
+            AuthorUsername = post.AuthorUsername,
+            Metadata = post.Metadata,
+            Assets = post.Assets
+        };
+    }
+
     private string Slugify(string title)
     {
         return title.ToLower().Replace(" ", "-");
