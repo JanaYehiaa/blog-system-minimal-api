@@ -32,6 +32,13 @@ app.MapPost("/create-blog", ([FromBody] PostCreateDTO post_C_DTO) =>
 .Produces<Post>(201)
 .ProducesValidationProblem(); //for when i add the validations
 
+
+app.MapGet("/{customUrl}", (string customUrl) =>
+{
+   
+
+});
+
 app.UseHttpsRedirection();
 
 
