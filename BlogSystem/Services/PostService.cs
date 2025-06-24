@@ -1,7 +1,7 @@
 
 public class PostService
 {
-    public Post CreatePost(PostCreateDTO dto, string authorUsername)
+    public Post CreatePost(PostCreateDTO dto, string authorUsername = "admin") //hardcoded for now, remove when JWT is done
     {
         Post post = new();
 
