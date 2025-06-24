@@ -14,6 +14,7 @@ public class PostService
         post.PublishedAt = null;
         post.ModifiedAt = null;
         post.AuthorUsername = authorUsername;
+        post.CustomUrl = dto.CustomUrl;
         post.Status = PostStatus.Draft;
         post.Metadata = dto.Metadata;
         post.Assets = dto.Assets;
