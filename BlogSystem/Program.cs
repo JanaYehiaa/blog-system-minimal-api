@@ -45,16 +45,8 @@ app.MapGet("/{customUrl}", (string customUrl, PostService postService) =>
 
 app.MapDelete("/posts/{customUrl}", (string customUrl, PostService postService) =>
 {
-    var post = PostStore.Posts.FirstOrDefault(p => p.CustomUrl == customUrl);
-    if (post is null)
-    {
-        return Results.NotFound();
-    }
-    else
-    {
-        PostStore.Posts.Remove(post);
-        return Results.NoContent();
-    }
+    bool deleted = postService.DeletePostByCustomUrl(customUrl);
+    return deleted ? Results.NoContent() : Results.NotFound();
 })
 .WithName("DeletePost")
 .Produces(204)
