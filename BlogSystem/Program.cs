@@ -45,7 +45,7 @@ app.MapGet("/{customUrl}", (string customUrl, PostService postService) =>
 app.MapPut("/posts/{customUrl}", (string customUrl, PostUpdateDTO dto, PostService postService) =>
 {
     var post = postService.UpdatePost(dto, customUrl);
-    return dto is not null ? Results.Ok(dto) : Results.NotFound();
+    return post is not null ? Results.Ok(dto) : Results.NotFound();
 })
  .WithName("UpdateBlog")
 .Accepts<PostUpdateDTO>("application/json")
