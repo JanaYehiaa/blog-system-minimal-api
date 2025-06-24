@@ -21,7 +21,7 @@ public class PostService
         return post;
     }
 
-    public PostViewDTO? GetPostByCustomUrl(string customUrl)
+    public PostViewDTO? GetPostViewDTOByCustomUrl(string customUrl)
     {
         var post = PostStore.Posts.FirstOrDefault(p => p.CustomUrl == customUrl);
         if (post is null) return null;
