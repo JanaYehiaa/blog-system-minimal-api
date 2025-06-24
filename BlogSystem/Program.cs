@@ -35,9 +35,13 @@ app.MapPost("/create-blog", ([FromBody] PostCreateDTO post_C_DTO) =>
 
 app.MapGet("/{customUrl}", (string customUrl) =>
 {
-   
-
-});
+    PostService handler = new();
+    var dto = handler.GetPostByCustomUrl(customUrl);
+    return dto is not null ? Results.Ok(dto) : Results.NotFound();
+})
+.WithName("GetPostByCustomUrl")
+.Produces<PostViewDTO>(200)
+.Produces(404);
 
 app.UseHttpsRedirection();
 
