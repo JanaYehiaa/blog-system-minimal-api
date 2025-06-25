@@ -22,7 +22,11 @@ if (app.Environment.IsDevelopment())
 }
 
 app.MapPost("/posts", ([FromBody] PostCreateDTO post_C_DTO, PostService postService) =>
-{ //TO DO: add validations later
+{
+    if (PostStore.Posts.Any(p => p.CustomUrl == post_C_DTO.CustomUrl))
+{
+    return Results.Conflict("Custom URL already exists.");
+}
     Post post = postService.CreatePost(post_C_DTO, "admin");
     PostStore.Posts.Add(post);
     return Results.Created($"/{post.CustomUrl}", post);
@@ -30,7 +34,7 @@ app.MapPost("/posts", ([FromBody] PostCreateDTO post_C_DTO, PostService postServ
 .WithName("CreatePost")
 .Accepts<PostCreateDTO>("application/json")
 .Produces<Post>(201)
-.ProducesValidationProblem(); //for when i add the validations
+.Produces(409); 
 
 app.MapGet("/posts/{customUrl}", (string customUrl, PostService postService) =>
 {
