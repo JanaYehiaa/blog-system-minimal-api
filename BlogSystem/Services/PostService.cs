@@ -55,17 +55,35 @@ public class PostService
         var post = PostStore.Posts.FirstOrDefault(p => p.CustomUrl == customUrl);
         if (post is null) return null;
 
-        post.Title = dto.Title;
-        post.Description = dto.Description;
-        post.Body = dto.Body;
-        post.Slug = Slugify(dto.Title);
+        if (!string.IsNullOrWhiteSpace(dto.Title) && dto.Title != post.Title)
+        {
+            post.Title = dto.Title;
+            post.Slug = Slugify(dto.Title);
+        }
+
+        if (!string.IsNullOrWhiteSpace(dto.Description))
+            post.Description = dto.Description;
+
+        if (!string.IsNullOrWhiteSpace(dto.Body))
+            post.Body = dto.Body;
+
+        if (dto.Status.HasValue)
+            post.Status = dto.Status.Value;
+
+        if (dto.Metadata?.Tags?.Any() == true)
+            post.Metadata.Tags = dto.Metadata.Tags;
+
+        if (dto.Metadata?.Categories?.Any() == true)
+            post.Metadata.Categories = dto.Metadata.Categories;
+
+        if (dto.Assets?.Any() == true)
+            post.Assets = dto.Assets;
+
         post.ModifiedAt = DateTime.UtcNow;
-        post.Status = dto.Status; //restrict later with JWT-based roles
-        post.Metadata = dto.Metadata;
-        post.Assets = dto.Assets;
 
         return post;
     }
+
 
     private string Slugify(string title)
     {
