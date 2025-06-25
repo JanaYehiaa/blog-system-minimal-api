@@ -15,7 +15,7 @@ public class PostCreateDTOValidator : AbstractValidator<PostCreateDTO>
         RuleFor(PostCreateDTO => PostCreateDTO.Body)
         .NotEmpty()
         .MinimumLength(50)
-        .WithMessage("Body should be more than 50 characters");
+        .WithMessage("Body must be at least 50 characters.");
 
         RuleFor(x => x.CustomUrl)
             .NotEmpty()
