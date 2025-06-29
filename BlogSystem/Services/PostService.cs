@@ -1,7 +1,7 @@
 
 public class PostService
 {
-    public Post CreatePost(PostCreateDTO dto, string authorUsername = "admin") //hardcoded for now, remove when JWT is done
+    public Post CreatePost(PostCreateDTO dto, string authorUsername, string authorId) 
     {
         Post post = new();
 
@@ -14,6 +14,7 @@ public class PostService
         post.PublishedAt = null;
         post.ModifiedAt = null;
         post.AuthorUsername = authorUsername;
+        post.AuthorId = authorId;
         post.CustomUrl = dto.CustomUrl;
         post.Status = PostStatus.Draft;
         post.Metadata = dto.Metadata;
@@ -84,6 +85,17 @@ public class PostService
         return post;
     }
 
+    public Post? PublishPost(string customUrl, DateTime? publishAt)
+    {
+        var post = PostStore.Posts.FirstOrDefault(p => p.CustomUrl == customUrl);
+        if (post == null)
+        {
+        return null;
+        } 
+        post.Status = PostStatus.Published;
+        post.PublishedAt = publishAt ?? DateTime.UtcNow;
+        return post;
+    }
 
     private string Slugify(string title)
     {

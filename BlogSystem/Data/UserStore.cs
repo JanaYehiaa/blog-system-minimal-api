@@ -3,7 +3,7 @@ public class UserStore
     public static List<User> Users = new List<User>
     {
         new User {
-            Id = 1,
+            Id = "one",
             Username = "admin",
             Email = "jana@test.com",
             PasswordHash = "try",

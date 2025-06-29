@@ -10,6 +10,7 @@ public class Post
     public DateTime? ModifiedAt { get; set; }
     public string CustomUrl { get; set; } = string.Empty;
     public string AuthorUsername { get; set; } = string.Empty;
+    public string AuthorId { get; set; } = string.Empty;
     public PostStatus Status { get; set; }
     public MetaData Metadata { get; set; } = new();
     public List<string> Assets { get; set; } = new();

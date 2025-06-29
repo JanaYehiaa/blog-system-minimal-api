@@ -11,6 +11,7 @@ public class PostStore
             Body = "Lorem ipsum dolor sit amet.",
             CreatedAt = DateTime.UtcNow,
             AuthorUsername = "admin",
+            CustomUrl = "test",
             Status = PostStatus.Draft,
             Metadata = new()
             {
