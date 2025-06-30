@@ -126,6 +126,31 @@ public class PostService
         return post;
     }
 
+    public async Task<PagedResult<PostPreviewDTO>> GetPaginatedSummaries(int page, int pageSize, string? search)
+{
+    var all = await FileStorageHandler.GetAllPublishedPostSummaries();
+
+    if (!string.IsNullOrWhiteSpace(search))
+    {
+        all = all
+            .Where(p => p.Title.Contains(search, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+    }
+
+    var total = all.Count;
+    var paged = all
+        .Skip((page - 1) * pageSize)
+        .Take(pageSize)
+        .ToList();
+
+    return new PagedResult<PostPreviewDTO>
+    {
+        Items = paged,
+        TotalCount = total
+    };
+}
+
+
     private string Slugify(string title)
     {
         return title.ToLower().Replace(" ", "-");

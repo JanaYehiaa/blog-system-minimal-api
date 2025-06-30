@@ -100,6 +100,46 @@ public static class FileStorageHandler
         }
     }
 
+public static async Task<List<PostPreviewDTO>> GetAllPublishedPostSummaries()
+{
+    var summaries = new List<PostPreviewDTO>();
+
+    if (!Directory.Exists(postBasePath))
+        return summaries;
+
+    var directories = Directory.GetDirectories(postBasePath);
+
+    foreach (var dir in directories)
+    {
+        string metaPath = Path.Combine(dir, "meta.json");
+        if (!File.Exists(metaPath)) continue;
+
+        try
+        {
+            var json = await File.ReadAllTextAsync(metaPath);
+            var post = JsonSerializer.Deserialize<Post>(json);
+            if (post is null || post.Status != PostStatus.Published) continue;
+
+            summaries.Add(new PostPreviewDTO
+            {
+                Title = post.Title,
+                Description = post.Description,
+                CustomUrl = post.CustomUrl,
+                PublishedAt = post.PublishedAt
+            });
+        }
+        catch
+        {
+            continue;
+        }
+    }
+
+    return summaries
+        .OrderByDescending(p => p.PublishedAt)
+        .ToList();
+}
+
+
     public static async Task SaveUser(User user)
     {
         string filePath = Path.Combine(userBasePath, user.Username);

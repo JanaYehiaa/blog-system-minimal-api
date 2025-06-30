@@ -11,6 +11,13 @@ builder.Services.AddScoped<PostService>();
 builder.Services.AddAuthentication().AddJwtBearer();
 builder.Services.AddScoped<IValidator<PostCreateDTO>, PostCreateDTOValidator>();
 builder.Services.AddScoped<IValidator<PostUpdateDTO>, PostUpdateDTOValidator>();
+builder.Services.AddRazorPages();
+
+
+builder.Services.AddHttpClient("BlogAPI", client =>
+{
+    client.BaseAddress = new Uri("http://localhost:5222");
+});
 
 builder.Services.AddSwaggerGen(options =>
 {
@@ -56,18 +63,28 @@ var app = builder.Build();
 
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseStaticFiles();
+app.UseRouting();
+app.UseHttpsRedirection();
+app.MapStaticAssets();
+app.MapRazorPages();
 
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+if (!app.Environment.IsDevelopment())
+{
+    app.UseExceptionHandler("/Error");
+    app.UseHsts();
+}
 
-app.MapPost("/posts", async (IValidator <PostCreateDTO> _validation ,[FromBody] PostCreateDTO post_C_DTO, PostService postService, ClaimsPrincipal user) =>
+app.MapPost("/posts", async (IValidator<PostCreateDTO> _validation, [FromBody] PostCreateDTO post_C_DTO, PostService postService, ClaimsPrincipal user) =>
 {
     var validationResult = await _validation.ValidateAsync(post_C_DTO);
 
-    if(!validationResult.IsValid)
+    if (!validationResult.IsValid)
     {
         var error = validationResult.Errors.FirstOrDefault();
         return Results.BadRequest(new { error?.PropertyName, error?.ErrorMessage });
@@ -82,7 +99,7 @@ app.MapPost("/posts", async (IValidator <PostCreateDTO> _validation ,[FromBody] 
         return Results.Unauthorized();
     }
 
-       if (await FileStorageHandler.CustomUrlExists(post_C_DTO.CustomUrl))
+    if (await FileStorageHandler.CustomUrlExists(post_C_DTO.CustomUrl))
     {
         return Results.Conflict("Custom URL already exists.");
     }
@@ -97,7 +114,7 @@ app.MapPost("/posts", async (IValidator <PostCreateDTO> _validation ,[FromBody] 
 .Produces<Post>(201)
 .Produces(409)
 .Produces(400)
-.Produces(401); 
+.Produces(401);
 
 app.MapPost("/posts/{customUrl}/publish", async (string customUrl, PostService postService, [FromQuery] DateTime? publishAt) =>
 {
@@ -119,11 +136,20 @@ app.MapGet("/posts/{customUrl}", async (string customUrl, PostService postServic
 .Produces<PostViewDTO>(200)
 .Produces(404);
 
-app.MapPut("/posts/{customUrl}", async (IValidator <PostUpdateDTO> _validation, string customUrl, [FromBody] PostUpdateDTO dto, PostService postService, ClaimsPrincipal user) =>
+app.MapGet("/posts", async (string? search, PostService postService, int page = 1, int pageSize = 5) =>
+{
+    var result = await postService.GetPaginatedSummaries(page, pageSize, search);
+    return Results.Ok(result);
+})
+.WithName("GetRecentPublishedPosts")
+.Produces<PagedResult<PostPreviewDTO>>(200);
+
+
+app.MapPut("/posts/{customUrl}", async (IValidator<PostUpdateDTO> _validation, string customUrl, [FromBody] PostUpdateDTO dto, PostService postService, ClaimsPrincipal user) =>
 {
     var validationResult = await _validation.ValidateAsync(dto);
 
-    if(!validationResult.IsValid)
+    if (!validationResult.IsValid)
     {
         var error = validationResult.Errors.FirstOrDefault();
         return Results.BadRequest(new { error?.PropertyName, error?.ErrorMessage });
@@ -139,7 +165,7 @@ app.MapPut("/posts/{customUrl}", async (IValidator <PostUpdateDTO> _validation, 
     if (role == UserRole.Author.ToString() && existingPost.AuthorUsername != username)
         return Results.Forbid();
 
-    var updatedPost = await postService.UpdatePost(dto, customUrl);  
+    var updatedPost = await postService.UpdatePost(dto, customUrl);
     return updatedPost is not null ? Results.Ok(updatedPost) : Results.NotFound();
 })
 .RequireAuthorization(JwtPolicies.CanEdit)
@@ -154,7 +180,7 @@ app.MapDelete("/posts/{customUrl}", async (string customUrl, PostService postSer
     var username = user.FindFirst("username")?.Value;
     var role = user.FindFirst(ClaimTypes.Role)?.Value;
 
-   var existingPost = await FileStorageHandler.GetPostByCustomUrl(customUrl);
+    var existingPost = await FileStorageHandler.GetPostByCustomUrl(customUrl);
     if (existingPost is null)
     {
         return Results.NotFound();
@@ -175,7 +201,6 @@ app.MapDelete("/posts/{customUrl}", async (string customUrl, PostService postSer
 .Produces(403);
 
 
-app.UseHttpsRedirection();
 
 
 app.Run();
