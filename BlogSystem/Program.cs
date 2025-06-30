@@ -2,12 +2,15 @@ using Microsoft.AspNetCore.Mvc;
 using System.Text.Json.Serialization;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
+using FluentValidation;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddScoped<PostService>();
 builder.Services.AddAuthentication().AddJwtBearer();
+builder.Services.AddScoped<IValidator<PostCreateDTO>, PostCreateDTOValidator>();
+builder.Services.AddScoped<IValidator<PostUpdateDTO>, PostUpdateDTOValidator>();
 
 builder.Services.AddSwaggerGen(options =>
 {
@@ -60,8 +63,16 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.MapPost("/posts", ([FromBody] PostCreateDTO post_C_DTO, PostService postService, ClaimsPrincipal user) =>
+app.MapPost("/posts", async (IValidator <PostCreateDTO> _validation ,[FromBody] PostCreateDTO post_C_DTO, PostService postService, ClaimsPrincipal user) =>
 {
+    var validationResult = await _validation.ValidateAsync(post_C_DTO);
+
+    if(!validationResult.IsValid)
+    {
+        var error = validationResult.Errors.FirstOrDefault();
+        return Results.BadRequest(new { error?.PropertyName, error?.ErrorMessage });
+    }
+
     var username = user.FindFirst("username")?.Value;
     var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? user.FindFirst("sub")?.Value;
     var roleStr = user.FindFirst(ClaimTypes.Role)?.Value;
@@ -90,7 +101,7 @@ app.MapPost("/posts", ([FromBody] PostCreateDTO post_C_DTO, PostService postServ
 
 app.MapPost("/posts/{customUrl}/publish", (string customUrl, PostService postService, [FromQuery] DateTime? publishAt) =>
 {
-    var post = postService.publishPost(customUrl, publishAt);
+    var post = postService.PublishPost(customUrl, publishAt);
     return post is not null ? Results.Ok(post) : Results.NotFound();
 })
 .RequireAuthorization(JwtPolicies.CanPublish)
@@ -108,8 +119,16 @@ app.MapGet("/posts/{customUrl}", (string customUrl, PostService postService) =>
 .Produces<PostViewDTO>(200)
 .Produces(404);
 
-app.MapPut("/posts/{customUrl}", (string customUrl, PostUpdateDTO dto, PostService postService, ClaimsPrincipal user) =>
+app.MapPut("/posts/{customUrl}", async (IValidator <PostUpdateDTO> _validation, string customUrl, [FromBody] PostUpdateDTO dto, PostService postService, ClaimsPrincipal user) =>
 {
+    var validationResult = await _validation.ValidateAsync(dto);
+
+    if(!validationResult.IsValid)
+    {
+        var error = validationResult.Errors.FirstOrDefault();
+        return Results.BadRequest(new { error?.PropertyName, error?.ErrorMessage });
+    }
+
     var username = user.FindFirst("username")?.Value;
     var role = user.FindFirst(ClaimTypes.Role)?.Value;
 
