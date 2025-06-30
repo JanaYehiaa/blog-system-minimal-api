@@ -1,0 +1,12 @@
+{
+  "Title": "new",
+  "Description": "this is a new post",
+  "Tags": [
+    "new",
+    "post"
+  ],
+  "Categories": [
+    "something"
+  ],
+  "CustomUrl": "new-post"
+}

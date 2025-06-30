@@ -82,13 +82,13 @@ app.MapPost("/posts", async (IValidator <PostCreateDTO> _validation ,[FromBody] 
         return Results.Unauthorized();
     }
 
-    if (PostStore.Posts.Any(p => p.CustomUrl == post_C_DTO.CustomUrl))
+       if (await FileStorageHandler.CustomUrlExists(post_C_DTO.CustomUrl))
     {
-    return Results.Conflict("Custom URL already exists.");
+        return Results.Conflict("Custom URL already exists.");
     }
 
-    Post post = postService.CreatePost(post_C_DTO, username, userId);
-    PostStore.Posts.Add(post);
+    Post post = await postService.CreatePost(post_C_DTO, username, userId);
+    //PostStore.Posts.Add(post);
     return Results.Created($"/{post.CustomUrl}", post);
 })
 .RequireAuthorization(JwtPolicies.CanCreate)
@@ -99,9 +99,9 @@ app.MapPost("/posts", async (IValidator <PostCreateDTO> _validation ,[FromBody] 
 .Produces(400)
 .Produces(401); 
 
-app.MapPost("/posts/{customUrl}/publish", (string customUrl, PostService postService, [FromQuery] DateTime? publishAt) =>
+app.MapPost("/posts/{customUrl}/publish", async (string customUrl, PostService postService, [FromQuery] DateTime? publishAt) =>
 {
-    var post = postService.PublishPost(customUrl, publishAt);
+    var post = await postService.PublishPost(customUrl, publishAt);
     return post is not null ? Results.Ok(post) : Results.NotFound();
 })
 .RequireAuthorization(JwtPolicies.CanPublish)
@@ -110,9 +110,9 @@ app.MapPost("/posts/{customUrl}/publish", (string customUrl, PostService postSer
 .Produces(404);
 
 
-app.MapGet("/posts/{customUrl}", (string customUrl, PostService postService) =>
+app.MapGet("/posts/{customUrl}", async (string customUrl, PostService postService) =>
 {
-    var dto = postService.GetPostViewDTOByCustomUrl(customUrl);
+    var dto = await postService.GetPostViewDTOByCustomUrl(customUrl);
     return dto is not null ? Results.Ok(dto) : Results.NotFound();
 })
 .WithName("GetPostByCustomUrl")
@@ -132,14 +132,14 @@ app.MapPut("/posts/{customUrl}", async (IValidator <PostUpdateDTO> _validation, 
     var username = user.FindFirst("username")?.Value;
     var role = user.FindFirst(ClaimTypes.Role)?.Value;
 
-    var existingPost = PostStore.Posts.FirstOrDefault(p => p.CustomUrl == customUrl);
+    var existingPost = await FileStorageHandler.GetPostByCustomUrl(customUrl);
     if (existingPost is null)
         return Results.NotFound();
 
     if (role == UserRole.Author.ToString() && existingPost.AuthorUsername != username)
         return Results.Forbid();
 
-    var updatedPost = postService.UpdatePost(dto, customUrl);  
+    var updatedPost = await postService.UpdatePost(dto, customUrl);  
     return updatedPost is not null ? Results.Ok(updatedPost) : Results.NotFound();
 })
 .RequireAuthorization(JwtPolicies.CanEdit)
@@ -149,12 +149,12 @@ app.MapPut("/posts/{customUrl}", async (IValidator <PostUpdateDTO> _validation, 
 .Produces(404)
 .Produces(403);
 
-app.MapDelete("/posts/{customUrl}", (string customUrl, PostService postService, ClaimsPrincipal user) =>
+app.MapDelete("/posts/{customUrl}", async (string customUrl, PostService postService, ClaimsPrincipal user) =>
 {
     var username = user.FindFirst("username")?.Value;
     var role = user.FindFirst(ClaimTypes.Role)?.Value;
 
-   var existingPost = PostStore.Posts.FirstOrDefault(p => p.CustomUrl == customUrl);
+   var existingPost = await FileStorageHandler.GetPostByCustomUrl(customUrl);
     if (existingPost is null)
     {
         return Results.NotFound();
@@ -165,7 +165,7 @@ app.MapDelete("/posts/{customUrl}", (string customUrl, PostService postService, 
         return Results.Forbid();
     }
 
-    bool deleted = postService.DeletePostByCustomUrl(customUrl);
+    bool deleted = await postService.DeletePostByCustomUrl(customUrl);
     return deleted ? Results.NoContent() : Results.NotFound();
 })
 .RequireAuthorization(JwtPolicies.CanDelete)

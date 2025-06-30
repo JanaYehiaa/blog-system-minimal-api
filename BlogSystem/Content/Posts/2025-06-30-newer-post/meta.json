@@ -1,0 +1,12 @@
+{
+  "Title": "newer post",
+  "Description": "this is a brand new post",
+  "Tags": [
+    "new",
+    "blog"
+  ],
+  "Categories": [
+    "nonfiction"
+  ],
+  "CustomUrl": "new-postt"
+}

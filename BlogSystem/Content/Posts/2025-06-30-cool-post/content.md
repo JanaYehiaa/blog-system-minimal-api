@@ -1,0 +1,1 @@
+new post alert! careful as this is a brand new blog post that i made all by myself!!
