@@ -1,20 +1,31 @@
-@page
+@page 
 @model IndexModel
 @{
     ViewData["Title"] = "Home";
+    Layout = "_Layout";
 }
 
-<section class="container mt-5">
-    <h1 class="display-4">Welcome to the Blog</h1>
+<!-- Hero / Search Section -->
+<section class="py-5 text-center bg-light">
+    <div class="container">
+        <h1 class="display-5 fw-bold mb-3">Search through dozens of blog posts</h1>
+        <p class="lead mb-4">Read what you like — find topics and tags that interest you.</p>
 
-    <form method="get" class="my-4">
-        <input asp-for="SearchQuery" name="SearchQuery" class="form-control" placeholder="Search posts by title..." />
-        <button type="submit" class="btn btn-primary mt-2">Search</button>
-        @if (!string.IsNullOrEmpty(Model.SearchQuery))
-        {
-            <a href="?" class="btn btn-outline-secondary mt-2">Clear</a>
-        }
-    </form>
+        <form method="get" class="d-flex justify-content-center" role="search" aria-label="Search blog posts">
+            <input asp-for="SearchQuery" name="SearchQuery" class="form-control form-control-lg me-2" 
+                   placeholder="Search posts by title or tags..." aria-label="Search posts" style="max-width: 500px;" />
+            <button type="submit" class="btn btn-primary btn-lg">Search</button>
+            @if (!string.IsNullOrEmpty(Model.SearchQuery))
+            {
+                <a href="?" class="btn btn-outline-secondary btn-lg ms-2">Clear</a>
+            }
+        </form>
+    </div>
+</section>
+
+<!-- Recent Publications -->
+<section class="container my-5">
+    <h2 class="mb-4">Recent Publications</h2>
 
     @if (!Model.Posts.Any())
     {
@@ -64,6 +75,15 @@
     }
 </section>
 
+<!-- Call to Action -->
+<section id="cta-section" class="cta-section text-center py-5 my-5 rounded shadow-sm" style="background-color: #fff5f5; border: 1px solid #e74c3c;">
+    <div class="container">
+    <h3 class="mb-3" style="color: #e74c3c;">Join us as an editor or writer</h3>
+    <p class="mb-4 text-muted">Contribute to sharing interests and information online.</p>
+    <a href="/signup" class="btn btn-primary btn-lg">Sign Up / Log In</a>
+    </div>
+</section>
+
 <style>
     .post-preview {
         height: 100%;
@@ -72,7 +92,7 @@
     }
     .post-preview:hover {
         transform: scale(1.02);
-        border-left: 5px solid #007bff;
+        border-left: 5px solid #0d6efd; /* Bootstrap primary color */
         cursor: pointer;
     }
 </style>

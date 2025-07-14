@@ -1,0 +1,46 @@
+@page
+@model CreateModel
+@{
+    Layout = "_Layout";
+}
+
+<div class="container mt-4">
+    <h2>Create a New Post</h2>
+    <form id="create-post-form">
+        <div class="mb-3">
+            <label class="form-label">Title</label>
+            <input type="text" class="form-control" name="Title" required />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Description</label>
+            <textarea class="form-control" name="Description" rows="2" required></textarea>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Body</label>
+            <textarea class="form-control" name="Body" rows="6" required></textarea>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Custom URL</label>
+            <input type="text" class="form-control" name="CustomUrl" required />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Tags (comma separated)</label>
+            <input type="text" class="form-control" id="tags" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Upload Images</label>
+            <input type="file" id="media" multiple accept="image/*" class="form-control" />
+        </div>
+
+        <button type="submit" class="btn btn-primary">Publish</button>
+    </form>
+</div>
+
+@section Scripts {
+    <script type="module" src="/js/createPost.js"></script>
+}

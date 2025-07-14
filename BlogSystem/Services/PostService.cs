@@ -47,11 +47,11 @@ public class PostService
 
     public async Task<bool> DeletePostByCustomUrl(string customUrl)
     {
-        var post = await FileStorageHandler.GetPostByCustomUrl(customUrl);;
+        var post = await FileStorageHandler.GetPostByCustomUrl(customUrl); ;
         if (post is not null)
         {
             return FileStorageHandler.DeletePost(post);
-           
+
         }
         return false;
     }
@@ -101,16 +101,16 @@ public class PostService
 
         await FileStorageHandler.SavePost(post);
         return new PostViewDTO
-    {
-        Title = post.Title,
-        Description = post.Description,
-        Body = post.Body,
-        PublishedAt = post.PublishedAt,
-        CustomUrl = post.CustomUrl,
-        AuthorUsername = post.AuthorUsername,
-        Metadata = post.Metadata,
-        Assets = post.Assets
-    };
+        {
+            Title = post.Title,
+            Description = post.Description,
+            Body = post.Body,
+            PublishedAt = post.PublishedAt,
+            CustomUrl = post.CustomUrl,
+            AuthorUsername = post.AuthorUsername,
+            Metadata = post.Metadata,
+            Assets = post.Assets
+        };
     }
 
     public async Task<Post?> PublishPost(string customUrl, DateTime? publishAt)
@@ -127,28 +127,80 @@ public class PostService
     }
 
     public async Task<PagedResult<PostPreviewDTO>> GetPaginatedSummaries(int page, int pageSize, string? search)
-{
-    var all = await FileStorageHandler.GetAllPublishedPostSummaries();
-
-    if (!string.IsNullOrWhiteSpace(search))
     {
-        all = all
-            .Where(p => p.Title.Contains(search, StringComparison.OrdinalIgnoreCase))
+        var all = await FileStorageHandler.GetAllPublishedPostSummaries();
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            all = all
+                .Where(p => p.Title.Contains(search, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+
+        var total = all.Count;
+        var paged = all
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .ToList();
+
+        return new PagedResult<PostPreviewDTO>
+        {
+            Items = paged,
+            TotalCount = total
+        };
     }
 
-    var total = all.Count;
-    var paged = all
-        .Skip((page - 1) * pageSize)
-        .Take(pageSize)
-        .ToList();
-
-    return new PagedResult<PostPreviewDTO>
+    public async Task<PagedResult<PostPreviewDTO>> GetPaginatedPostsByCategory(string category, int page, int pageSize)
     {
-        Items = paged,
-        TotalCount = total
-    };
-}
+        var all = await FileStorageHandler.GetAllPublishedPostSummaries();
+
+        var filtered = all.Where(p => p.Categories != null && p.Categories.Contains(category, StringComparer.OrdinalIgnoreCase)).ToList();
+
+        var total = filtered.Count;
+
+        var paged = filtered
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToList();
+
+        return new PagedResult<PostPreviewDTO>
+        {
+            Items = paged,
+            TotalCount = total
+        };
+    }
+
+    public async Task<PagedResult<PostPreviewDTO>> GetPaginatedPostsByTagSearch(string tagSearch, int page, int pageSize)
+    {
+        var all = await FileStorageHandler.GetAllPublishedPostSummaries();
+
+        var filtered = all
+            .Where(p => p.Tags != null && p.Tags.Any(t => t.Contains(tagSearch, StringComparison.OrdinalIgnoreCase)))
+            .ToList();
+
+        var total = filtered.Count;
+
+        var paged = filtered
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToList();
+
+        return new PagedResult<PostPreviewDTO>
+        {
+            Items = paged,
+            TotalCount = total
+        };
+    }
+
+    public async Task<PagedResult<PostPreviewDTO>> GetPostsByCategory(string category, int page, int pageSize)
+        => await GetPaginatedPostsByCategory(category, page, pageSize);
+
+    public async Task<PagedResult<PostPreviewDTO>> GetPostsByTag(string tag, int page, int pageSize)
+        => await GetPaginatedPostsByTagSearch(tag, page, pageSize);
+
+    public async Task<List<string>> GetAllCategories()
+        => await FileStorageHandler.GetAllCategories();
+
 
 
     private string Slugify(string title)

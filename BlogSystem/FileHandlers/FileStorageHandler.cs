@@ -100,57 +100,64 @@ public static class FileStorageHandler
         }
     }
 
-public static async Task<List<PostPreviewDTO>> GetAllPublishedPostSummaries()
-{
-    var summaries = new List<PostPreviewDTO>();
-
-    if (!Directory.Exists(postBasePath))
-        return summaries;
-
-    var directories = Directory.GetDirectories(postBasePath);
-
-    foreach (var dir in directories)
+    public static async Task<List<PostPreviewDTO>> GetAllPublishedPostSummaries()
     {
-        string metaPath = Path.Combine(dir, "meta.json");
-        if (!File.Exists(metaPath)) continue;
+        var summaries = new List<PostPreviewDTO>();
 
-        try
+        if (!Directory.Exists(postBasePath))
+            return summaries;
+
+        var directories = Directory.GetDirectories(postBasePath);
+
+        foreach (var dir in directories)
         {
-            var json = await File.ReadAllTextAsync(metaPath);
-            var post = JsonSerializer.Deserialize<Post>(json);
-            if (post is null || post.Status != PostStatus.Published) continue;
+            string metaPath = Path.Combine(dir, "meta.json");
+            if (!File.Exists(metaPath)) continue;
 
-            summaries.Add(new PostPreviewDTO
+            try
             {
-                Title = post.Title,
-                Description = post.Description,
-                CustomUrl = post.CustomUrl,
-                PublishedAt = post.PublishedAt
-            });
-        }
-        catch
-        {
-            continue;
-        }
-    }
+                var json = await File.ReadAllTextAsync(metaPath);
+                var post = JsonSerializer.Deserialize<Post>(json);
+                if (post is null || post.Status != PostStatus.Published) continue;
 
-    return summaries
-        .OrderByDescending(p => p.PublishedAt)
-        .ToList();
-}
+                summaries.Add(new PostPreviewDTO
+                {
+                    Title = post.Title,
+                    Description = post.Description,
+                    CustomUrl = post.CustomUrl,
+                    PublishedAt = post.PublishedAt,
+                    Categories = post.Metadata.Categories ?? new List<string>(),
+                    Tags = post.Metadata.Tags ?? new List<string>()
+                });
+            }
+            catch
+            {
+                continue;
+            }
+        }
+
+        return summaries
+            .OrderByDescending(p => p.PublishedAt)
+            .ToList();
+    }
 
 
     public static async Task SaveUser(User user)
     {
-        string filePath = Path.Combine(userBasePath, user.Username);
-        Directory.CreateDirectory(filePath);
+        Directory.CreateDirectory(userBasePath);
+        string metadataPath = Path.Combine(userBasePath, $"{user.Username}.json");
 
-        string metadataPath = Path.Combine(filePath, "profile.json");
+        if (File.Exists(metadataPath))
+        {
+            throw new InvalidOperationException("Username already exists.");
+        }
 
         var metadata = new
         {
+            user.Id,
             user.Username,
             user.Email,
+            user.PasswordHash,
             user.Role
         };
 
@@ -160,6 +167,26 @@ public static async Task<List<PostPreviewDTO>> GetAllPublishedPostSummaries()
         });
 
         await File.WriteAllTextAsync(metadataPath, json);
+
+    }
+
+    public static async Task<User?> GetUserByUsername(string username)
+    {
+        string filePath = Path.Combine(userBasePath, username + ".json");
+        if (!File.Exists(filePath))
+        {
+            return null;
+        }
+        try
+        {
+            var json = await File.ReadAllTextAsync(filePath);
+            var user = JsonSerializer.Deserialize<User>(json);
+            return user;
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     public static void SaveTagIfNotExists(string slug)
@@ -263,11 +290,50 @@ public static async Task<List<PostPreviewDTO>> GetAllPublishedPostSummaries()
             }
             catch
             {
-                continue; 
+                continue;
             }
         }
 
         return null;
+    }
+
+    public static async Task<List<string>> GetAllCategories()
+    {
+        var categories = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        if (!Directory.Exists(postBasePath))
+            return categories.ToList();
+
+        var directories = Directory.GetDirectories(postBasePath);
+
+        foreach (var dir in directories)
+        {
+            string metaPath = Path.Combine(dir, "meta.json");
+            if (!File.Exists(metaPath)) continue;
+
+            try
+            {
+                var json = await File.ReadAllTextAsync(metaPath);
+                var post = JsonSerializer.Deserialize<Post>(json);
+                if (post is null || post.Status != PostStatus.Published) continue;
+
+                if (post.Metadata.Categories != null)
+                {
+                    foreach (var category in post.Metadata.Categories)
+                    {
+                        if (!string.IsNullOrWhiteSpace(category))
+                            categories.Add(category.Trim());
+                    }
+                }
+            }
+            catch
+            {
+                // ignore malformed or unreadable files
+                continue;
+            }
+        }
+
+        return categories.OrderBy(c => c).ToList();
     }
 
 

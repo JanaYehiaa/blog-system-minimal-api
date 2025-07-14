@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 public class IndexModel : PageModel
 {
     private readonly IHttpClientFactory _httpClientFactory;
-    private const int PageSize = 5;  
+    private const int PageSize = 5;
 
     public IndexModel(IHttpClientFactory httpClientFactory)
     {
@@ -28,6 +28,7 @@ public class IndexModel : PageModel
 
         var httpClient = _httpClientFactory.CreateClient("BlogAPI");
 
+        // Use combined search (title OR tags) with your minimal API endpoint
         var url = $"/posts?page={PageNumber}&pageSize={PageSize}";
 
         if (!string.IsNullOrWhiteSpace(SearchQuery))
@@ -45,6 +46,11 @@ public class IndexModel : PageModel
                 Posts = result.Items;
                 TotalPages = (int)Math.Ceiling((double)result.TotalCount / PageSize);
             }
+        }
+        else
+        {
+            Posts = new List<PostPreviewDTO>(); // Clear on failure
+            TotalPages = 1;
         }
     }
 }

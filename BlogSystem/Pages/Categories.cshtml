@@ -1,0 +1,66 @@
+@page
+@model CategoriesModel
+@{
+    ViewData["Title"] = "Categories";
+    Layout = "_Layout";
+}
+
+<section class="container mt-5">
+    <h1 class="mb-4">Browse by Category</h1>
+
+    <form method="get" class="mb-4">
+        <div class="input-group">
+            <select class="form-select" asp-for="SelectedCategory" asp-items="Model.CategorySelectList">
+                <option value="">-- Select a category --</option>
+            </select>
+            <button type="submit" class="btn btn-danger">Filter</button>
+        </div>
+    </form>
+
+    @if (!Model.Posts.Any())
+    {
+        <div class="alert alert-warning">No posts found in this category.</div>
+    }
+    else
+    {
+        <div class="row">
+            @foreach (var post in Model.Posts)
+            {
+                <div class="col-md-6 mb-4">
+                    <a href="/posts/@post.CustomUrl" class="text-decoration-none text-reset">
+                        <div class="card h-100 shadow-sm post-preview">
+                            <div class="card-body">
+                                <h5 class="card-title">@post.Title</h5>
+                                <p class="card-text text-truncate">@post.Description</p>
+                                <small class="text-muted">@post.PublishedAt?.ToString("MMM dd, yyyy")</small>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            }
+        </div>
+
+        @if (Model.TotalPages > 1)
+        {
+            <nav>
+                <ul class="pagination justify-content-center">
+                    @if (Model.HasPreviousPage)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" href="?SelectedCategory=@Model.SelectedCategory&page=@(Model.PageNumber - 1)">Previous</a>
+                        </li>
+                    }
+                    <li class="page-item disabled">
+                        <span class="page-link">Page @Model.PageNumber of @Model.TotalPages</span>
+                    </li>
+                    @if (Model.HasNextPage)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" href="?SelectedCategory=@Model.SelectedCategory&page=@(Model.PageNumber + 1)">Next</a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        }
+    }
+</section>

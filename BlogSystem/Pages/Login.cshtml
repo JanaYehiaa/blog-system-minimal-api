@@ -1,0 +1,38 @@
+@page
+@model LoginModel
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login</title>
+    <style>
+        body { font-family: Arial; background: #f0f0f0; padding: 50px; }
+        .form-box { max-width: 400px; margin: auto; padding: 20px; background: white; border-radius: 8px; }
+        input, label { display: block; width: 100%; margin-bottom: 10px; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <div class="form-box">
+        <h2>Login</h2>
+        @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+        {
+            <p class="error">@Model.ErrorMessage</p>
+        }
+<form id="login-form">
+    <label>Username</label>
+    <input type="text" name="Username" id="username" required />
+
+    <label>Password</label>
+    <input type="password" name="Password" id="password" required />
+
+    <button type="submit">Login</button>
+</form>
+<p id="error-message" class="error"></p>
+    </div>
+    <script src="/js/login.js"></script>
+</body>
+</html>

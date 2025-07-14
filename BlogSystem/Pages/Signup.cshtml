@@ -1,0 +1,42 @@
+@page "/signup"
+@model SignupModel
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sign Up</title>
+    <link rel="stylesheet" href="~/css/site.css" />
+</head>
+<body>
+    <div class="form-box">
+        <h2>Sign Up</h2>
+        <p id="error-message" class="error"></p>
+
+        <form id="signup-form" method="post">
+            <label>Username</label>
+            <input type="text" name="Username" required />
+
+            <label>Email</label>
+            <input type="email" name="Email" required />
+
+            <label>Password</label>
+            <input type="password" name="Password" required />
+
+            <label>Role</label>
+            <select name="SelectedRole" required>
+                <option value="" disabled selected>Select a role</option>
+                <option value="Author">Author</option>
+                <option value="Editor">Editor</option>
+                <option value="Admin">Admin</option>
+            </select>
+
+            <button type="submit">Create Account</button>
+        </form>
+    </div>
+
+    <script src="/js/signup.js"></script>
+</body>
+</html>

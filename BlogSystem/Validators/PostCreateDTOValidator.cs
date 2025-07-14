@@ -5,17 +5,15 @@ public class PostCreateDTOValidator : AbstractValidator<PostCreateDTO>
     public PostCreateDTOValidator()
     {
         RuleFor(PostCreateDTO => PostCreateDTO.Title)
-        .NotEmpty()
-        .WithMessage("Title can't be empty");
+        .NotEmpty().WithMessage("Title can't be empty");
 
         RuleFor(PostCreateDTO => PostCreateDTO.Description)
         .NotEmpty().WithMessage("Description cannot be empty.")
         .Length(1, 120).WithMessage("Description must be between 1 and 120 characters.");
 
         RuleFor(PostCreateDTO => PostCreateDTO.Body)
-        .NotEmpty()
-        .MinimumLength(50)
-        .WithMessage("Body must be at least 50 characters.");
+        .NotEmpty().WithMessage("Body can't be empty")
+        .MinimumLength(50).WithMessage("Body must be at least 50 characters.");
 
         RuleFor(x => x.CustomUrl)
             .NotEmpty()
